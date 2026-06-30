@@ -1,0 +1,37 @@
+name: KodKampus Editor Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: TurboWarp scratch-gui klonla
+        run: git clone --depth 1 https://github.com/TurboWarp/scratch-gui.git gui
+
+      - name: Node 18 kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Bagimliliklari kur
+        working-directory: gui
+        run: npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Editoru derle (/editor/ alt klasoru icin)
+        working-directory: gui
+        env:
+          NODE_ENV: production
+          ROOT: /editor/
+          STATIC_PATH: /editor/static
+          NODE_OPTIONS: --openssl-legacy-provider --max-old-space-size=4096
+        run: npm run build
+
+      - name: Derlenen editoru yukle (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kodkampus-editor
+          path: gui/build
